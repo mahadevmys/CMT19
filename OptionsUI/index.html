@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Live stock price ticker</title>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	<script src="https://unpkg.com/ag-grid-community@20.2.0/dist/ag-grid-community.min.js"></script>
+	
+    <script>
+        		
+		var columnDefs = 
+		[
+			{headerName: "Symbol", field: "Symbol"},
+			{headerName: "StrikePrice", field: "StrikePrice"},
+			{headerName: "PremiumPrice", field: "PremiumPrice"},
+			{headerName: "TickerSpotPrice", field: "TickerSpotPrice"},
+			{headerName: "ExpiryDate", field: "ExpiryDate"}
+		];
+		
+		var rowData = null;
+		var socket = null;
+		var gridOptions = null;
+
+	jQuery.ajax({
+            url: "http://ec2-35-175-207-33.compute-1.amazonaws.com:5000/data",
+            type: "GET",
+	    async: "false",
+            contentType: 'application/json; charset=utf-8',
+            success: function(dataList) 
+            {
+             setTimeout(null,3000);
+		
+		jQuery.ajax({
+            url: "http://ec2-35-175-207-33.compute-1.amazonaws.com:5000/url",
+            type: "GET",
+			async: "false",
+            contentType: 'application/json; charset=utf-8',
+            success: function(dataList) 
+			{
+                rowData=dataList;
+				gridOptions = 
+				{
+					defaultColDef: 
+					{
+						editable: true,
+						sortable: true,
+						filter: true
+					},
+					animateRows: true,
+					enableCellChangeFlash:true,
+					getRowNodeId: function(data) { return data.ProductId; },
+					columnDefs: columnDefs,
+					rowData: rowData
+				};
+		
+		socket = io.connect(window.location.href,{transports:['websocket']});
+
+		socket.on('message', function(data) 
+		{
+		
+			var rowNodes = []; 
+			
+			for(var j=0;j<data.length;j++)
+			{
+				
+				var rowNode = rowData[data[j].ProductId];
+				rowNode.TickerSpotPrice=data[j].TickerSpotPrice;
+				rowNode.PremiumPrice=data[j].PremiumPrice;
+				gridOptions.api.batchUpdateRowData({update: [rowNode]}, null);
+				
+			}
+		
+          
+			
+        });
+				const eGridDiv = document.querySelector('#myGrid');
+				new agGrid.Grid(eGridDiv, gridOptions);
+            },
+            error : function(jqXHR, textStatus, errorThrown) {
+            },
+
+            timeout: 120000,
+        });			
+
+            },
+            error : function(jqXHR, textStatus, errorThrown) {
+            },
+
+            timeout: 120000,
+        });			
+
+		
+	
+			
+				
+		
+    
+		
+    </script>
+
+  </head>
+  <body>
+    
+	<div id="myGrid" style="height: 650px; width:600px;" class="ag-theme-balham"></div>
+
+<script type="text/javascript" charset="utf-8">
+
+	
+
+</script>
+  </body>
+</html>
