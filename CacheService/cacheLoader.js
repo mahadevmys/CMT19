@@ -51,7 +51,7 @@ function loadCache() {
 	var startIndex = 0;
 	for (var i=0, count = undInfos.length; i < count; ++i)
 	{
-		startIndex = (i * NumOfOptions) + 1;
+		startIndex = (i * NumOfOptions);
 		loadOptionData(undInfos[i].Symbol, undInfos[i].Spot, 30, Date.now(), 5, startIndex);
 	}
 	

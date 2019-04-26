@@ -30,15 +30,17 @@ io.on('connection', function(socket) {
 			{
 				var idValue = i;
 				var stockprice = Math.floor(Math.random() * 350000);
-				var node = {ProductId:i,PremiumPrice:stockprice+50,TickerSpotPrice:stockprice-50};
+				var node = {ProductId:i,PremiumPrice:stockprice+50};
 				testData.push(node);
 				
 			}
 			start = counter*inc-1;
 			inc++;
 			
+			var pricerData = {Symbol:'AAPL', TickerSpotPrice:145, BatchMessages:testData}
+			
   
-  io.emit('message', testData);
+  io.emit('message', pricerData);
 }, 15);
 });
 

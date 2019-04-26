@@ -81,11 +81,11 @@ async function IntializeCache()
 }
 
 function loadCache() {
-	var undInfos = [{Symbol:'AAPL', Spot:205.80}, {Symbol:'MSFT', Spot:130.50}];
+	var undInfos = [{Symbol:'AAPL', Spot:205.80}]; //, {Symbol:'MSFT', Spot:130.50}];
 	var startIndex = 0;
 	for (var i=0, count = undInfos.length; i < count; ++i)
 	{
-		startIndex = (i * NumOfOptions) + 1;
+		startIndex = (i * NumOfOptions);
 		loadOptionData(undInfos[i].Symbol, undInfos[i].Spot, 30, Date.now(), 5, startIndex);
 	}
 }
