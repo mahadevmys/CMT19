@@ -2,7 +2,7 @@ var express = require('express');
 var cors = require('cors');
 var redis = require('redis');
 var promise = require('bluebird');
-var NumOfOptions = 100; //25000;
+
 
 var client = redis.createClient();
 
@@ -42,14 +42,17 @@ app.get("/load", (req, res, next) => {
 	loadCache();
 });
 
+var NumOfOptions = 150; //25000;
+var DecimalPlaces = 3;
+var MulFactor = Math.pow(10, DecimalPlaces);
+
 function loadCache() {
-	var symbols = ['AAPL', 'MSFT'];
-	var count = symbols.length;
+	var undInfos = [{Symbol:'AAPL', Spot:205.80}, {Symbol:'MSFT', Spot:130.50}];
 	var startIndex = 0;
-	for (var i=0, count = symbols.length; i < count; ++i)
+	for (var i=0, count = undInfos.length; i < count; ++i)
 	{
 		startIndex = (i * NumOfOptions) + 1;
-		loadOptionData(symbols[i], 100, 30, Date.now(), 5, startIndex);
+		loadOptionData(undInfos[i].Symbol, undInfos[i].Spot, 30, Date.now(), 5, startIndex);
 	}
 	
   // for(var i=0;i<25000;i++)
@@ -79,8 +82,8 @@ function loadOptionData(symbol, baseSpotPrice, rangePercent, stDate, numOfMonths
 	// Strikes
 	var index = 0;
 	var numOfStrikes = Math.round((NumOfOptions / expiries.length)) + 1;
-	var incFactor = (rangePercent * 2/ numOfStrikes).toFixed(3);;
-	var startSpot = baseSpotPrice * (1-rangePercent/100);
+	var incFactor = (rangePercent * 2)/ numOfStrikes;
+	var startSpot = (baseSpotPrice * (1-rangePercent/100));
 	
 	// Options Data
 	var optionsData = []; //new List<OptionsData>();
@@ -89,9 +92,9 @@ function loadOptionData(symbol, baseSpotPrice, rangePercent, stDate, numOfMonths
 		for (var j = 0; j < numOfStrikes && index < NumOfOptions; ++j)
 		{	
 			var id = (i*numOfStrikes) + j + startIndex;
-			var sp = startSpot + (j * incFactor);
+			var sp = (startSpot + (j * incFactor));
 			
-			var optionData = { ProductId:id, Symbol:symbol, ExpiryDate:expiries[i], StrikePrice:sp};
+			var optionData = { ProductId:id, Symbol:symbol, ExpiryDate:expiries[i], StrikePrice:round(sp)};
 			var jsonData = JSON.stringify(optionData);
 			console.log(jsonData); 
 			// Push to Redis.
@@ -99,6 +102,10 @@ function loadOptionData(symbol, baseSpotPrice, rangePercent, stDate, numOfMonths
 			index++;
 		}
 	}
+}
+
+function round(number, places){
+	return ((number * MulFactor)/MulFactor);
 }
 
 Date.prototype.addDays = function(days) {

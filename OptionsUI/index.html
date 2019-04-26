@@ -12,10 +12,9 @@
 		var columnDefs = 
 		[
 			{headerName: "Symbol", field: "Symbol"},
+			{headerName: "ExpiryDate", field: "ExpiryDate"},
 			{headerName: "StrikePrice", field: "StrikePrice"},
-			{headerName: "PremiumPrice", field: "PremiumPrice"},
-			{headerName: "TickerSpotPrice", field: "TickerSpotPrice"},
-			{headerName: "ExpiryDate", field: "ExpiryDate"}
+			{headerName: "PremiumPrice", field: "PremiumPrice"}
 		];
 		
 		var rowData = null;
@@ -54,26 +53,24 @@
 					rowData: rowData
 				};
 		
-		socket = io.connect(window.location.href,{transports:['websocket']});
+				socket = io.connect(window.location.href,{transports:['websocket']});
 
-		socket.on('message', function(data) 
-		{
-		
-			var rowNodes = []; 
-			
-			for(var j=0;j<data.length;j++)
-			{
+				socket.on('message', function(data) 
+				{
 				
-				var rowNode = rowData[data[j].ProductId];
-				rowNode.TickerSpotPrice=data[j].TickerSpotPrice;
-				rowNode.PremiumPrice=data[j].PremiumPrice;
-				gridOptions.api.batchUpdateRowData({update: [rowNode]}, null);
+					var nodes = data.batchMessages; 
+					
+					for(var j=0, length = nodes.length;j<length;j++)
+					{
+						var rowNode = rowData[nodes[j].ProductId];
+						rowNode.PremiumPrice = nodes[j].PremiumPrice;
+						gridOptions.api.batchUpdateRowData({update: [rowNode]}, null);
+					}
+					
+					// Update the ticker price.
+					
+				});
 				
-			}
-		
-          
-			
-        });
 				const eGridDiv = document.querySelector('#myGrid');
 				new agGrid.Grid(eGridDiv, gridOptions);
             },
@@ -83,19 +80,14 @@
             timeout: 120000,
         });			
 
-            },
-            error : function(jqXHR, textStatus, errorThrown) {
-            },
-
-            timeout: 120000,
-        });			
-
-		
-	
-			
-				
-		
+    },
     
+	error : function(jqXHR, textStatus, errorThrown) {
+            },
+
+        timeout: 120000,
+	});			
+
 		
     </script>
 
